@@ -143,6 +143,30 @@ app.put("/team/:id", async (req, res) => {
   }
 });
 
+app.delete("/employee/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    let data = {};
+    const employeeassignmentData = await pool.query(
+      "DELETE from EMPLOYEE_ASSIGNMENT where employee_id=$1 returning *",
+      [id]
+    );
+    const employeeData = await pool.query(
+      "DELETE from EMPLOYEE where id=$1 returning *",
+      [id]
+    );
+    data = employeeData.rows[0];
+    if (data) {
+      data.teams = employeeassignmentData.rows;
+    } else {
+      data = {
+        info: "no employee",
+      };
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 app.listen(PORT, (req, res) => {
   console.log("server listening in port 3000");
 });
